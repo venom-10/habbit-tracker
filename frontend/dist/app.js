@@ -289,7 +289,7 @@ function renderDay() {
 function renderYear() {
   const Y = ui.year;
   const hf = ui.filter === 'all' ? null : state.habits.find(h => h.id === ui.filter);
-  const color = hf ? colorVar(hf) : 'var(--ink)';
+  const color = hf ? colorVar(hf) : 'var(--accent)';
   const rOf = k => {
     if (hf) return ratio(hf, k);
     const active = activeHabits(k);

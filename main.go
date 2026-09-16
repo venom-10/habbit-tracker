@@ -71,11 +71,11 @@ func databasePath() (string, error) {
 	return filepath.Join(dir, "habits.db"), nil
 }
 
-// backgroundFor paints the window in the saved theme's surface colour so it
-// doesn't flash white before the page loads.
+// backgroundFor paints the window in the saved theme's band colour so it
+// doesn't flash a different colour before the page loads.
 func backgroundFor(s *store.Store) *options.RGBA {
 	if theme, _ := s.Setting(context.Background(), "theme"); theme == "dark" {
-		return &options.RGBA{R: 0x1A, G: 0x20, B: 0x29, A: 255}
+		return &options.RGBA{R: 0x11, G: 0x2F, B: 0x25, A: 255}
 	}
-	return &options.RGBA{R: 255, G: 255, B: 255, A: 255}
+	return &options.RGBA{R: 0x1A, G: 0x40, B: 0x33, A: 255}
 }
