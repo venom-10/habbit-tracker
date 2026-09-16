@@ -1,0 +1,13 @@
+# Wails build output and generated bindings
+build/bin/
+frontend/wailsjs/
+
+# Local databases created while testing
+*.db
+*.db-shm
+*.db-wal
+
+# Editors and OS
+.idea/
+.vscode/
+.DS_Store
