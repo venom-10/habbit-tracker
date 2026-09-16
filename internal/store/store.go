@@ -142,6 +142,8 @@ func (s *Store) ListHabits(ctx context.Context) ([]Habit, error) {
 }
 
 // SaveHabit creates the habit when ID is empty, otherwise updates it.
+// An update can change everything except the kind: switching between yes/no
+// and counted would reinterpret the habit's existing history.
 func (s *Store) SaveHabit(ctx context.Context, h Habit) (Habit, error) {
 	h, err := normalizeHabit(h)
 	if err != nil {
@@ -161,15 +163,35 @@ func (s *Store) SaveHabit(ctx context.Context, h Habit) (Habit, error) {
 		}
 		return h, nil
 	}
-	err = s.db.QueryRowContext(ctx, "UPDATE habits SET name = ?, color = ?, kind = ?, target = ?, unit = ? WHERE id = ? RETURNING created_on",
-		h.Name, h.Color, h.Kind, h.Target, h.Unit, h.ID).Scan(&h.CreatedOn)
+	var kind string
+	err = s.db.QueryRowContext(ctx, "SELECT kind FROM habits WHERE id = ?", h.ID).Scan(&kind)
 	if errors.Is(err, sql.ErrNoRows) {
 		return Habit{}, fmt.Errorf("update habit %q: %w", h.ID, ErrNotFound)
 	}
 	if err != nil {
 		return Habit{}, fmt.Errorf("update habit: %w", err)
 	}
+	if kind != h.Kind {
+		return Habit{}, fmt.Errorf("%w: a habit can't switch between yes/no and counted", ErrInvalid)
+	}
+	err = s.db.QueryRowContext(ctx, "UPDATE habits SET name = ?, color = ?, target = ?, unit = ? WHERE id = ? RETURNING created_on",
+		h.Name, h.Color, h.Target, h.Unit, h.ID).Scan(&h.CreatedOn)
+	if err != nil {
+		return Habit{}, fmt.Errorf("update habit: %w", err)
+	}
 	return h, nil
+}
+
+// DeleteHabit removes a habit and every entry logged for it.
+func (s *Store) DeleteHabit(ctx context.Context, id string) error {
+	res, err := s.db.ExecContext(ctx, "DELETE FROM habits WHERE id = ?", id)
+	if err != nil {
+		return fmt.Errorf("delete habit: %w", err)
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return fmt.Errorf("delete habit %q: %w", id, ErrNotFound)
+	}
+	return nil
 }
 
 func normalizeHabit(h Habit) (Habit, error) {

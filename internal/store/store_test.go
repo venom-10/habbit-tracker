@@ -69,6 +69,55 @@ func TestSaveAndListHabits(t *testing.T) {
 	}
 }
 
+func TestUpdateCannotChangeKind(t *testing.T) {
+	s := openTest(t)
+	gym := mustSave(t, s, Habit{Name: "Gym", Color: "blue", Kind: KindBool})
+	gym.Kind, gym.Target, gym.Unit = KindCount, 3, "sessions"
+	if _, err := s.SaveHabit(context.Background(), gym); !errors.Is(err, ErrInvalid) {
+		t.Fatalf("switching kind: want ErrInvalid, got %v", err)
+	}
+}
+
+func TestDeleteHabitRemovesItsEntries(t *testing.T) {
+	ctx := context.Background()
+	s := openTest(t)
+	water := mustSave(t, s, Habit{Name: "Water", Color: "teal", Kind: KindCount, Target: 8, Unit: "glasses"})
+	gym := mustSave(t, s, Habit{Name: "Gym", Color: "blue", Kind: KindBool})
+	for _, d := range []string{"2026-09-14", "2026-09-15"} {
+		if err := s.SetEntry(ctx, d, water.ID, 5); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := s.SetEntry(ctx, "2026-09-15", gym.ID, 1); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := s.DeleteHabit(ctx, water.ID); err != nil {
+		t.Fatalf("DeleteHabit: %v", err)
+	}
+
+	habits, err := s.ListHabits(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(habits) != 1 || habits[0].ID != gym.ID {
+		t.Errorf("habits after delete = %+v, want only Gym", habits)
+	}
+	r, err := s.GetRange(ctx, "", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := r.Entries["2026-09-14"]; ok {
+		t.Errorf("Water's entries should be gone, still have %v", r.Entries["2026-09-14"])
+	}
+	if got := r.Entries["2026-09-15"]; len(got) != 1 || got[gym.ID] != 1 {
+		t.Errorf("Gym's entry should remain untouched, got %v", got)
+	}
+	if err := s.DeleteHabit(ctx, water.ID); !errors.Is(err, ErrNotFound) {
+		t.Errorf("deleting twice: want ErrNotFound, got %v", err)
+	}
+}
+
 func TestListHabitsEmptyIsNotNil(t *testing.T) {
 	got, err := openTest(t).ListHabits(context.Background())
 	if err != nil {

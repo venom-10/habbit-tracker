@@ -32,6 +32,11 @@ func (a *App) SaveHabit(h store.Habit) (store.Habit, error) {
 	return a.store.SaveHabit(a.ctx, h)
 }
 
+// DeleteHabit removes a habit along with all of its logged days.
+func (a *App) DeleteHabit(id string) error {
+	return a.store.DeleteHabit(a.ctx, id)
+}
+
 // SetEntry sets a habit's value for a YYYY-MM-DD date; 0 clears it.
 func (a *App) SetEntry(date, habitID string, value int) error {
 	return a.store.SetEntry(a.ctx, date, habitID, value)
