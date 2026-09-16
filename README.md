@@ -37,6 +37,17 @@ wails build -platform windows/amd64          # Windows, also works from Linux or
 wails build -platform darwin/universal       # macOS, must be built on a Mac
 ```
 
+## Releasing
+
+Pushing a version tag builds Linux, Windows and macOS versions on GitHub Actions and publishes them as a GitHub Release:
+
+```sh
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+The workflow is `.github/workflows/release.yml`; the text shown on the release page is `.github/release-notes.md`. To try the builds without publishing, run the workflow by hand from the Actions tab — the downloads appear under that run's artifacts.
+
 ## Tests
 
 ```sh
