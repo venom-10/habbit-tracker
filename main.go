@@ -19,6 +19,12 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
+// icon is the Linux window icon. macOS and Windows get theirs from the same
+// file when wails build packages the app.
+//
+//go:embed build/appicon.png
+var icon []byte
+
 // The window is sized to the compact calendar: a toolbar plus a six-week grid.
 const (
 	windowWidth  = 480
@@ -49,7 +55,7 @@ func main() {
 		OnStartup:        app.startup,
 		OnShutdown:       app.shutdown,
 		Bind:             []interface{}{app},
-		Linux:            &linux.Options{ProgramName: "habit-calendar"},
+		Linux:            &linux.Options{ProgramName: "habit-calendar", Icon: icon},
 	})
 	if err != nil {
 		log.Fatal(err)

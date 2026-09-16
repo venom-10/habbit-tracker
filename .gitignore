@@ -2,6 +2,10 @@
 build/bin/
 frontend/wailsjs/
 
+# Platform files Wails generates from build/appicon.png on each build
+build/darwin/
+build/windows/
+
 # Local databases created while testing
 *.db
 *.db-shm
