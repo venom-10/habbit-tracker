@@ -21,8 +21,8 @@ var assets embed.FS
 
 // The window is sized to the compact calendar: a toolbar plus a six-week grid.
 const (
-	windowWidth  = 392
-	windowHeight = 384
+	windowWidth  = 480
+	windowHeight = 420
 )
 
 func main() {
