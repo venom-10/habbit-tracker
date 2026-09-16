@@ -47,6 +47,9 @@ type Habit struct {
 	Kind   string `json:"kind"`
 	Target int    `json:"target"`
 	Unit   string `json:"unit"`
+	// CreatedOn is the local date the habit was added. Days before it don't
+	// count as missed; the store sets it and ignores values sent by callers.
+	CreatedOn string `json:"createdOn"`
 }
 
 // Range holds entries (date -> habit id -> value) and notes (date -> text).
@@ -86,7 +89,7 @@ CREATE TABLE IF NOT EXISTS habits (
 	target     INTEGER NOT NULL CHECK (target >= 1),
 	unit       TEXT NOT NULL DEFAULT '',
 	position   INTEGER NOT NULL,
-	created_at TEXT NOT NULL
+	created_on TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS entries (
 	date     TEXT NOT NULL,
@@ -122,7 +125,7 @@ func (s *Store) migrate(ctx context.Context) error {
 
 // ListHabits returns all habits in the order they were added.
 func (s *Store) ListHabits(ctx context.Context) ([]Habit, error) {
-	rows, err := s.db.QueryContext(ctx, "SELECT id, name, color, kind, target, unit FROM habits ORDER BY position, created_at")
+	rows, err := s.db.QueryContext(ctx, "SELECT id, name, color, kind, target, unit, created_on FROM habits ORDER BY position")
 	if err != nil {
 		return nil, fmt.Errorf("list habits: %w", err)
 	}
@@ -130,7 +133,7 @@ func (s *Store) ListHabits(ctx context.Context) ([]Habit, error) {
 	habits := []Habit{}
 	for rows.Next() {
 		var h Habit
-		if err := rows.Scan(&h.ID, &h.Name, &h.Color, &h.Kind, &h.Target, &h.Unit); err != nil {
+		if err := rows.Scan(&h.ID, &h.Name, &h.Color, &h.Kind, &h.Target, &h.Unit, &h.CreatedOn); err != nil {
 			return nil, fmt.Errorf("list habits: %w", err)
 		}
 		habits = append(habits, h)
@@ -148,22 +151,23 @@ func (s *Store) SaveHabit(ctx context.Context, h Habit) (Habit, error) {
 		if h.ID, err = newID(); err != nil {
 			return Habit{}, err
 		}
+		h.CreatedOn = s.now().Format(DateLayout)
 		_, err = s.db.ExecContext(ctx, `
-			INSERT INTO habits (id, name, color, kind, target, unit, position, created_at)
+			INSERT INTO habits (id, name, color, kind, target, unit, position, created_on)
 			VALUES (?, ?, ?, ?, ?, ?, (SELECT COALESCE(MAX(position), -1) + 1 FROM habits), ?)`,
-			h.ID, h.Name, h.Color, h.Kind, h.Target, h.Unit, s.now().UTC().Format(time.RFC3339))
+			h.ID, h.Name, h.Color, h.Kind, h.Target, h.Unit, h.CreatedOn)
 		if err != nil {
 			return Habit{}, fmt.Errorf("create habit: %w", err)
 		}
 		return h, nil
 	}
-	res, err := s.db.ExecContext(ctx, "UPDATE habits SET name = ?, color = ?, kind = ?, target = ?, unit = ? WHERE id = ?",
-		h.Name, h.Color, h.Kind, h.Target, h.Unit, h.ID)
+	err = s.db.QueryRowContext(ctx, "UPDATE habits SET name = ?, color = ?, kind = ?, target = ?, unit = ? WHERE id = ? RETURNING created_on",
+		h.Name, h.Color, h.Kind, h.Target, h.Unit, h.ID).Scan(&h.CreatedOn)
+	if errors.Is(err, sql.ErrNoRows) {
+		return Habit{}, fmt.Errorf("update habit %q: %w", h.ID, ErrNotFound)
+	}
 	if err != nil {
 		return Habit{}, fmt.Errorf("update habit: %w", err)
-	}
-	if n, _ := res.RowsAffected(); n == 0 {
-		return Habit{}, fmt.Errorf("update habit %q: %w", h.ID, ErrNotFound)
 	}
 	return h, nil
 }

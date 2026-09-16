@@ -40,13 +40,21 @@ func TestSaveAndListHabits(t *testing.T) {
 	if water.Name != "Water" {
 		t.Errorf("name not trimmed: %q", water.Name)
 	}
+	if water.CreatedOn != "2026-09-16" {
+		t.Errorf("CreatedOn = %q, want the store's today 2026-09-16", water.CreatedOn)
+	}
 	if gym.Target != 1 || gym.Unit != "" {
 		t.Errorf("bool habit should have target 1 and no unit, got %d %q", gym.Target, gym.Unit)
 	}
 
 	water.Target = 10
-	if _, err := s.SaveHabit(ctx, water); err != nil {
+	water.CreatedOn = "1999-01-01" // callers can't rewrite history
+	updated, err := s.SaveHabit(ctx, water)
+	if err != nil {
 		t.Fatalf("update: %v", err)
+	}
+	if updated.CreatedOn != "2026-09-16" {
+		t.Errorf("update changed CreatedOn to %q", updated.CreatedOn)
 	}
 
 	got, err := s.ListHabits(ctx)
