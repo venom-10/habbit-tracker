@@ -34,7 +34,8 @@ const ui = {
   focus: TODAY_KEY,      // roving focus in the grid
   selected: TODAY_KEY,   // day shown in the day panel
   panel: null,           // null | 'habits' | 'day' | 'insights'
-  adding: false,
+  editing: null,          // null | 'new' | habit id, while the habit form is open
+  confirmDelete: false,
   insView: 'year',
   year: TODAY.getFullYear(),
   filter: 'all',
@@ -149,6 +150,7 @@ const ICON = {
   minus: '<svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2 6h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
   plus: '<svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M6 2v8M2 6h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
   moon: '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 9.6A5.8 5.8 0 0 1 6.4 2.5a5.8 5.8 0 1 0 7.1 7.1Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>',
+  pen: '<svg class="pen" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M8.2 1.8l2 2L4 10H2V8z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>',
   sun: '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.4"/><path d="M8 1.5v1.6M8 12.9v1.6M1.5 8h1.6M12.9 8h1.6M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M3.4 12.6l1.1-1.1M11.5 4.5l1.1-1.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
 };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -202,10 +204,16 @@ function renderPanels() {
 
 function renderHabits() {
   if (ui.panel !== 'habits') return;
-  $('#habits-title').textContent = ui.adding ? 'New habit' : 'Habits';
-  ['habits-view', 'add-btn', 'legend'].forEach(id => { $('#' + id).hidden = ui.adding; });
-  $('#add-form').hidden = !ui.adding;
-  if (ui.adding) return;
+  const editing = !!ui.editing;
+  $('#habits-title').textContent = ui.editing === 'new' ? 'New habit' : editing ? 'Edit habit' : 'Habits';
+  ['habits-view', 'add-btn', 'legend'].forEach(id => { $('#' + id).hidden = editing; });
+  $('#add-form').hidden = !editing;
+  if (editing) {
+    $('#delete-btn').hidden = ui.editing === 'new';
+    $('#form-actions').hidden = ui.confirmDelete;
+    $('#delete-confirm').hidden = !ui.confirmDelete;
+    return;
+  }
 
   $('#habits-empty').hidden = state.habits.length > 0;
   $('#legend').hidden = state.habits.length === 0;
@@ -228,7 +236,10 @@ function renderHabits() {
     }
     return `<li class="habit" style="--c:${colorVar(h)}">
       <i class="swatch" aria-hidden="true"></i>
-      <div class="habit-text"><span class="habit-name">${esc(h.name)}</span><span class="habit-meta">${esc(metaOf(h))}</span></div>
+      <button class="habit-edit" data-action="edit" data-hid="${h.id}" data-key="e-${h.id}" aria-label="Edit ${esc(h.name)}, ${esc(metaOf(h))}" title="Edit">
+        <span class="habit-name-row"><span class="habit-name">${esc(h.name)}</span>${ICON.pen}</span>
+        <span class="habit-meta">${esc(metaOf(h))}</span>
+      </button>
       <span class="streak ${s === 0 ? 'none' : ''} ${s >= 7 ? 'hot' : ''}" title="Current streak: ${s} day${s === 1 ? '' : 's'}">${ICON.flame}${s}d</span>
       ${quick}
     </li>`;
@@ -382,7 +393,7 @@ function showMonthOf(k) {
   if (d.getMonth() !== ui.month.getMonth() || d.getFullYear() !== ui.month.getFullYear()) ui.month = new Date(d.getFullYear(), d.getMonth(), 1);
 }
 function openPanel(p, focusSel) {
-  ui.panel = p; ui.adding = false;
+  ui.panel = p; ui.editing = null; ui.confirmDelete = false;
   render();
   const el = document.querySelector(focusSel);
   if (el) el.focus();
@@ -390,7 +401,7 @@ function openPanel(p, focusSel) {
 function closePanel() {
   if (pendingNotes.size) flushNotes();
   const was = ui.panel;
-  ui.panel = null; ui.adding = false;
+  ui.panel = null; ui.editing = null; ui.confirmDelete = false;
   render();
   const target = was === 'day' ? `[data-key="cell-${ui.focus}"]` : was === 'habits' ? '#habits-btn' : '#insights-btn';
   const el = document.querySelector(target);
@@ -473,14 +484,19 @@ document.addEventListener('click', e => {
       api.SetTheme(next).catch(err => toast(`Couldn't save the theme: ${errText(err)}`));
       break;
     }
-    case 'add': startAdd(); break;
-    case 'add-cancel': ui.adding = false; render(); $('#add-btn').focus(); break;
+    case 'add': openForm(null); break;
+    case 'edit': openForm(h); break;
+    case 'form-cancel': closeForm(); break;
+    case 'delete-ask': askDelete(); break;
+    case 'delete-cancel': ui.confirmDelete = false; render(); $('#delete-btn').focus(); break;
+    case 'delete-confirm': deleteHabit(); break;
   }
 });
 
 document.addEventListener('keydown', e => {
   if (e.key !== 'Escape' || !ui.panel) return;
-  if (ui.adding) { ui.adding = false; render(); $('#add-btn').focus(); }
+  if (ui.confirmDelete) { ui.confirmDelete = false; render(); $('#delete-btn').focus(); }
+  else if (ui.editing) closeForm();
   else closePanel();
 });
 
@@ -511,52 +527,118 @@ $('#day-note').addEventListener('input', e => {
 });
 window.addEventListener('blur', () => { if (pendingNotes.size) flushNotes(); });
 
-/* ---------- add habit ---------- */
+/* ---------- add, edit and delete habits ---------- */
 $('#color-options').innerHTML = COLORS.map(c =>
   `<label title="${c[0].toUpperCase() + c.slice(1)}"><input type="radio" name="color" id="color-${c}" value="${c}"><span style="--c:var(--h-${c})"></span><span class="sr">${c}</span></label>`).join('');
-function startAdd() {
+
+// Opens the habit form empty (h = null) or filled in for editing h.
+function openForm(h) {
   $('#add-form').reset();
-  const used = new Set(state.habits.map(h => h.color));
-  $('#color-' + (COLORS.find(c => !used.has(c)) || COLORS[0])).checked = true;
-  $('#count-fields').hidden = true;
-  $('#add-err').hidden = true;
-  ui.adding = true;
+  $('#form-err').hidden = true;
+  if (h) {
+    $('#habit-name').value = h.name;
+    $('#kind-' + h.kind).checked = true;
+    $('#habit-target').value = h.kind === 'count' ? h.target : 10;
+    $('#habit-unit').value = h.unit;
+    $('#color-' + h.color).checked = true;
+  } else {
+    const used = new Set(state.habits.map(x => x.color));
+    $('#color-' + (COLORS.find(c => !used.has(c)) || COLORS[0])).checked = true;
+  }
+  // A habit's kind is fixed once it exists: switching would reinterpret its history.
+  document.querySelectorAll('input[name="kind"]').forEach(r => { r.disabled = !!h; });
+  $('#kind-note').hidden = !h;
+  $('#count-fields').hidden = !$('#kind-count').checked;
+  $('#form-submit').textContent = h ? 'Save' : 'Add habit';
+  ui.editing = h ? h.id : 'new';
+  ui.confirmDelete = false;
   render();
   $('#habit-name').focus();
 }
+
+function closeForm() {
+  const was = ui.editing;
+  ui.editing = null; ui.confirmDelete = false;
+  render();
+  const back = was && was !== 'new' && document.querySelector(`[data-key="e-${was}"]`);
+  (back || $('#add-btn')).focus();
+}
+
 document.querySelectorAll('input[name="kind"]').forEach(r => r.addEventListener('change', () => {
   $('#count-fields').hidden = !$('#kind-count').checked;
 }));
+
 function formError(msg, focusSel) {
-  const el = $('#add-err');
+  const el = $('#form-err');
   el.textContent = msg; el.hidden = false;
   if (focusSel) $(focusSel).focus();
 }
+
 $('#add-form').addEventListener('submit', async e => {
   e.preventDefault();
+  if (ui.confirmDelete) return;
+  const existing = ui.editing !== 'new' ? habitById(ui.editing) : null;
   const name = $('#habit-name').value.trim();
   if (!name) return formError('Give the habit a name.', '#habit-name');
-  const kind = $('#kind-count').checked ? 'count' : 'bool';
+  const kind = existing ? existing.kind : ($('#kind-count').checked ? 'count' : 'bool');
   const target = kind === 'count' ? parseInt($('#habit-target').value, 10) : 1;
   if (kind === 'count' && !(target >= 1 && target <= 100000)) return formError('Set a daily target between 1 and 100000.', '#habit-target');
   const unit = kind === 'count' ? $('#habit-unit').value.trim() : '';
   const color = (document.querySelector('input[name="color"]:checked') || {}).value || COLORS[0];
 
-  const submit = $('#add-submit');
+  const submit = $('#form-submit');
   submit.disabled = true;
   try {
-    const saved = await api.SaveHabit({ id: '', name, color, kind, target, unit });
-    state.habits.push(saved);
-    ui.adding = false;
-    render();
-    $('#add-btn').focus();
-    toast(`Added ${saved.name}`);
+    const saved = await api.SaveHabit({ id: existing ? existing.id : '', name, color, kind, target, unit });
+    if (existing) state.habits[state.habits.indexOf(existing)] = saved;
+    else state.habits.push(saved);
+    closeForm();
+    toast(existing ? `Saved ${saved.name}` : `Added ${saved.name}`);
   } catch (err) {
-    formError(`Couldn't add the habit: ${errText(err)}`);
+    formError(`Couldn't ${existing ? 'save' : 'add'} the habit: ${errText(err)}`);
   } finally {
     submit.disabled = false;
   }
 });
+
+function askDelete() {
+  const h = habitById(ui.editing);
+  if (!h) return;
+  const days = Object.values(state.entries).filter(day => day[h.id]).length;
+  $('#delete-msg').textContent = days
+    ? `Delete ${h.name} and its ${days} logged day${days === 1 ? '' : 's'}? This can't be undone.`
+    : `Delete ${h.name}? This can't be undone.`;
+  ui.confirmDelete = true;
+  render();
+  $('[data-key="delete-cancel"]').focus();
+}
+
+async function deleteHabit() {
+  const h = habitById(ui.editing);
+  if (!h) return;
+  const yes = $('#delete-yes');
+  yes.disabled = true;
+  try {
+    await api.DeleteHabit(h.id);
+  } catch (err) {
+    yes.disabled = false;
+    ui.confirmDelete = false;
+    render();
+    formError(`Couldn't delete the habit: ${errText(err)}`);
+    return;
+  }
+  yes.disabled = false;
+  state.habits = state.habits.filter(x => x.id !== h.id);
+  for (const k of Object.keys(state.entries)) {
+    delete state.entries[k][h.id];
+    if (!Object.keys(state.entries[k]).length) delete state.entries[k];
+  }
+  if (ui.filter === h.id) ui.filter = 'all';
+  ui.editing = null; ui.confirmDelete = false;
+  render();
+  $('#add-btn').focus();
+  toast(`Deleted ${h.name}`);
+}
 
 /* ---------- start ---------- */
 function fatal(msg) {

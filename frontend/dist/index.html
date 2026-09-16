@@ -66,6 +66,7 @@
               <label><input type="radio" name="kind" id="kind-bool" value="bool" checked><span>Done / not done</span></label>
               <label><input type="radio" name="kind" id="kind-count" value="count"><span>Count to target</span></label>
             </div>
+            <p class="form-note" id="kind-note" hidden>This can't be changed once a habit exists.</p>
           </fieldset>
           <div class="two" id="count-fields" hidden>
             <div class="field"><label for="habit-target">Daily target</label><input type="number" id="habit-target" min="1" max="100000" value="10"></div>
@@ -75,10 +76,19 @@
             <legend>Color</legend>
             <div class="colors" id="color-options"></div>
           </fieldset>
-          <p class="err" id="add-err" role="alert" hidden></p>
-          <div class="form-actions">
-            <button type="button" class="btn" data-action="add-cancel" data-key="add-cancel">Cancel</button>
-            <button type="submit" class="btn primary" id="add-submit">Add habit</button>
+          <p class="err" id="form-err" role="alert" hidden></p>
+          <div class="form-actions" id="form-actions">
+            <button type="button" class="btn danger-ghost" id="delete-btn" data-action="delete-ask" data-key="delete-ask" hidden>Delete</button>
+            <span class="grow"></span>
+            <button type="button" class="btn" data-action="form-cancel" data-key="form-cancel">Cancel</button>
+            <button type="submit" class="btn primary" id="form-submit">Add habit</button>
+          </div>
+          <div class="confirm" id="delete-confirm" role="alertdialog" aria-labelledby="delete-msg" hidden>
+            <p id="delete-msg"></p>
+            <div class="form-actions">
+              <button type="button" class="btn" data-action="delete-cancel" data-key="delete-cancel">Keep it</button>
+              <button type="button" class="btn danger" id="delete-yes" data-action="delete-confirm" data-key="delete-confirm">Delete habit</button>
+            </div>
           </div>
         </form>
       </div>
