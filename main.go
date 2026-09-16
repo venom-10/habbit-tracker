@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"runtime"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -32,10 +31,6 @@ const (
 	windowHeight = 420
 )
 
-// GNOME only rounds the top corners of a framed window, so on Linux the window
-// is frameless and the page draws its own rounded frame and window buttons.
-const customFrame = runtime.GOOS == "linux"
-
 func main() {
 	path, err := databasePath()
 	if err != nil {
@@ -55,13 +50,12 @@ func main() {
 		MinHeight:        340,
 		MaxWidth:         560,
 		MaxHeight:        560,
-		Frameless:        customFrame,
 		BackgroundColour: backgroundFor(s),
 		AssetServer:      &assetserver.Options{Assets: assets},
 		OnStartup:        app.startup,
 		OnShutdown:       app.shutdown,
 		Bind:             []interface{}{app},
-		Linux:            &linux.Options{ProgramName: "habit-calendar", Icon: icon, WindowIsTranslucent: true},
+		Linux:            &linux.Options{ProgramName: "habit-calendar", Icon: icon},
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -83,12 +77,11 @@ func databasePath() (string, error) {
 	return filepath.Join(dir, "habits.db"), nil
 }
 
-// backgroundFor paints the window in the saved theme's band colour so it
-// doesn't flash a different colour before the page loads. With a custom frame
-// the page clears it once its rounded corners are in place.
+// backgroundFor paints the window in the saved theme's surface colour so it
+// doesn't flash white before the page loads.
 func backgroundFor(s *store.Store) *options.RGBA {
 	if theme, _ := s.Setting(context.Background(), "theme"); theme == "dark" {
-		return &options.RGBA{R: 0x14, G: 0x3B, B: 0x2E, A: 255}
+		return &options.RGBA{R: 0x1A, G: 0x20, B: 0x29, A: 255}
 	}
-	return &options.RGBA{R: 0x1A, G: 0x40, B: 0x33, A: 255}
+	return &options.RGBA{R: 255, G: 255, B: 255, A: 255}
 }

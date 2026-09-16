@@ -289,7 +289,7 @@ function renderDay() {
 function renderYear() {
   const Y = ui.year;
   const hf = ui.filter === 'all' ? null : state.habits.find(h => h.id === ui.filter);
-  const color = hf ? colorVar(hf) : 'var(--accent)';
+  const color = hf ? colorVar(hf) : 'var(--ink)';
   const rOf = k => {
     if (hf) return ratio(hf, k);
     const active = activeHabits(k);
@@ -427,15 +427,6 @@ function applyTheme(t) {
 }
 if (mq && mq.addEventListener) mq.addEventListener('change', () => applyTheme(root.dataset.theme));
 
-/* ---------- window frame ---------- */
-// With no system title bar (Linux), the page rounds the window's corners, the
-// header moves the window, and it gains minimize and close buttons.
-function useCustomFrame() {
-  root.dataset.frame = 'custom';
-  $('#win-controls').hidden = false;
-  window.runtime.WindowSetBackgroundColour(0, 0, 0, 0);
-}
-
 /* ---------- toast & tooltip ---------- */
 let toastTimer;
 function toast(msg) {
@@ -499,8 +490,6 @@ document.addEventListener('click', e => {
     case 'delete-ask': askDelete(); break;
     case 'delete-cancel': ui.confirmDelete = false; render(); $('#delete-btn').focus(); break;
     case 'delete-confirm': deleteHabit(); break;
-    case 'win-minimize': window.runtime.WindowMinimise(); break;
-    case 'win-close': flushNotes().finally(() => window.runtime.Quit()); break;
   }
 });
 
@@ -677,8 +666,6 @@ async function boot() {
     fatal('Open Habit Calendar with `wails dev` or a built app — the Go backend isn\'t available in a plain browser tab.');
     return;
   }
-  // Set up the frame first so the close button exists even if loading fails.
-  api.CustomFrame().then(custom => { if (custom) useCustomFrame(); }).catch(() => {});
   try {
     const [, theme] = await Promise.all([loadAll(), api.Theme()]);
     applyTheme(theme);
