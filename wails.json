@@ -6,6 +6,7 @@
   "frontend:install": "",
   "frontend:build": "",
   "wailsjsdir": "./frontend",
+  "build:tags": "webkit2_41",
   "author": {
     "name": "venom-10",
     "email": "arohit0102@gmail.com"

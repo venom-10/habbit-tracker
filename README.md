@@ -22,16 +22,17 @@ Run `wails doctor` to check what's missing.
 ## Develop
 
 ```sh
-wails dev                    # macOS, Windows
-wails dev -tags webkit2_41   # Linux with WebKitGTK 4.1 (Ubuntu 24.04+)
+wails dev
 ```
 
 Frontend files in `frontend/dist` reload on save.
 
+On Linux the app targets WebKitGTK 4.1 through the `webkit2_41` build tag set in `wails.json`, so `wails dev` and `wails build` need no extra flags. The tag has no effect on macOS or Windows. On an older distro that only ships WebKitGTK 4.0, remove `build:tags` from `wails.json`.
+
 ## Build
 
 ```sh
-wails build -tags webkit2_41                 # Linux  -> build/bin/habit-calendar
+wails build                                  # Linux  -> build/bin/habit-calendar
 wails build -platform windows/amd64          # Windows, also works from Linux or macOS
 wails build -platform darwin/universal       # macOS, must be built on a Mac
 ```
