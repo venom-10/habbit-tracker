@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Habit Calendar</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" type="module"></script>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="bar">
+    <h1 class="month-title" id="month-title"></h1>
+    <div class="tools">
+      <button class="icon-btn" data-action="prev" data-key="nav-prev" aria-label="Previous month" title="Previous month"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button class="icon-btn" id="today-btn" data-action="today" data-key="nav-today" aria-label="Go to today" title="Go to today"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg></button>
+      <button class="icon-btn" data-action="next" data-key="nav-next" aria-label="Next month" title="Next month"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <span class="sep" aria-hidden="true"></span>
+      <button class="icon-btn" id="habits-btn" data-action="panel" data-panel="habits" data-key="habits-btn" aria-expanded="false" aria-controls="habits-panel" aria-label="Habits" title="Habits">
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="3.5" cy="4" r="1.3" fill="currentColor"/><circle cx="3.5" cy="8" r="1.3" fill="currentColor"/><circle cx="3.5" cy="12" r="1.3" fill="currentColor"/><path d="M7 4h6.5M7 8h6.5M7 12h6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+      <button class="icon-btn" id="insights-btn" data-action="panel" data-panel="insights" data-key="insights-btn" aria-expanded="false" aria-controls="insights-panel" aria-label="Year and stats" title="Year and stats">
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 13.5h11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M4.5 11V8M8 11V4.5M11.5 11V6.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+      </button>
+      <button class="icon-btn" id="theme-btn" data-action="theme" data-key="theme" aria-label="Switch to dark theme"></button>
+    </div>
+  </header>
+
+  <div class="stage">
+    <main class="cal-area" id="cal-area">
+      <div class="wk" aria-hidden="true"><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span><span>Su</span></div>
+      <div class="cal" id="cal"></div>
+    </main>
+
+    <!-- Habits -->
+    <section class="panel from-left" id="habits-panel" aria-labelledby="habits-title" hidden>
+      <div class="panel-head">
+        <button class="icon-btn" data-action="close" data-key="habits-back" aria-label="Back to calendar"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <h2 class="panel-title" id="habits-title">Habits</h2>
+      </div>
+      <div class="panel-body">
+        <div id="habits-view">
+          <p class="empty" id="habits-empty" hidden>No habits yet. Add the first thing you want to do every day — the calendar fills in as you mark it done.</p>
+          <ul class="habit-list" id="habit-list"></ul>
+        </div>
+        <button class="add-btn" id="add-btn" data-action="add" data-key="add">
+          <svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          Add habit
+        </button>
+        <div class="legend" id="legend">
+          <span class="label">Key</span>
+          <span><i class="dot done"></i>Done</span>
+          <span><i class="dot part" style="--p:60%"></i>Partway</span>
+          <span><i class="dot miss" style="--c:var(--ink-3)"></i>Missed</span>
+          <span><i class="fold"></i>Has a note</span>
+        </div>
+
+        <form class="add-form" id="add-form" novalidate hidden>
+          <div class="field">
+            <label for="habit-name">Name</label>
+            <input type="text" id="habit-name" maxlength="40" placeholder="e.g. Stretch" autocomplete="off">
+          </div>
+          <fieldset>
+            <legend>How you track it</legend>
+            <div class="radio-seg">
+              <label><input type="radio" name="kind" id="kind-bool" value="bool" checked><span>Done / not done</span></label>
+              <label><input type="radio" name="kind" id="kind-count" value="count"><span>Count to target</span></label>
+            </div>
+          </fieldset>
+          <div class="two" id="count-fields" hidden>
+            <div class="field"><label for="habit-target">Daily target</label><input type="number" id="habit-target" min="1" max="100000" value="10"></div>
+            <div class="field"><label for="habit-unit">Unit</label><input type="text" id="habit-unit" maxlength="16" placeholder="pages"></div>
+          </div>
+          <fieldset>
+            <legend>Color</legend>
+            <div class="colors" id="color-options"></div>
+          </fieldset>
+          <p class="err" id="add-err" role="alert" hidden></p>
+          <div class="form-actions">
+            <button type="button" class="btn" data-action="add-cancel" data-key="add-cancel">Cancel</button>
+            <button type="submit" class="btn primary" id="add-submit">Add habit</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Day -->
+    <section class="panel" id="day-panel" aria-labelledby="day-title" hidden>
+      <div class="panel-head">
+        <button class="icon-btn" data-action="close" data-key="day-back" aria-label="Back to calendar"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <h2 class="panel-title" id="day-title"></h2>
+        <button class="icon-btn" data-action="day-prev" data-key="day-prev" aria-label="Previous day"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="icon-btn" data-action="day-next" data-key="day-next" aria-label="Next day"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <div class="panel-body">
+        <p class="day-sum" id="day-sum"></p>
+        <div class="rows" id="day-habits"></div>
+        <div class="note-wrap">
+          <div class="note-head"><label class="label" for="day-note">Note</label><span class="note-status" id="note-status" role="status"></span></div>
+          <textarea id="day-note" placeholder="Add a note for this day…"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- Year & stats -->
+    <section class="panel" id="insights-panel" aria-label="Year and stats" hidden>
+      <div class="panel-head">
+        <button class="icon-btn" data-action="close" data-key="ins-back" aria-label="Back to calendar"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="seg" role="group" aria-label="View">
+          <button data-action="ins-view" data-view="year" data-key="ins-year" aria-pressed="true">Year</button>
+          <button data-action="ins-view" data-view="stats" data-key="ins-stats" aria-pressed="false">Stats</button>
+        </div>
+        <span class="grow"></span>
+        <div id="ins-nav" class="tools"></div>
+      </div>
+      <div class="panel-body" id="ins-body"></div>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+  <div class="fatal" id="fatal" role="alert" hidden></div>
+</div>
+
+<div class="tip" id="tip" hidden></div>
+</body>
+</html>
