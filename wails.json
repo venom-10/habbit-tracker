@@ -1,0 +1,18 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "Habit Calendar",
+  "outputfilename": "habit-calendar",
+  "frontend:dir": "frontend",
+  "frontend:install": "",
+  "frontend:build": "",
+  "wailsjsdir": "./frontend",
+  "author": {
+    "name": "venom-10",
+    "email": "arohit0102@gmail.com"
+  },
+  "info": {
+    "productName": "Habit Calendar",
+    "productVersion": "0.1.0",
+    "comments": "A compact calendar for tracking daily habits"
+  }
+}
