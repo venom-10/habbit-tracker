@@ -2,8 +2,8 @@
   <!-- Source for build/appicon.png. Tile follows the macOS icon grid (824px body, 100px margin). -->
   <defs>
     <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#27303D"/>
-      <stop offset="1" stop-color="#141920"/>
+      <stop offset="0" stop-color="#225444"/>
+      <stop offset="1" stop-color="#10301F"/>
     </linearGradient>
     <filter id="shadow" x="-15%" y="-15%" width="130%" height="140%">
       <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#000000" flood-opacity="0.3"/>
@@ -14,25 +14,25 @@
   <rect x="101.5" y="101.5" width="821" height="821" rx="183.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.07" stroke-width="3"/>
 
   <!-- Header: month title and navigation -->
-  <rect x="212" y="206" width="272" height="44" rx="22" fill="#E6EAF0"/>
-  <circle cx="752" cy="228" r="16" fill="#8A94A3"/>
-  <circle cx="808" cy="228" r="16" fill="#8A94A3"/>
+  <rect x="212" y="206" width="272" height="44" rx="22" fill="#EBF5F0"/>
+  <circle cx="752" cy="228" r="16" fill="#B2CBC0"/>
+  <circle cx="808" cy="228" r="16" fill="#B2CBC0"/>
   <rect x="180" y="300" width="664" height="6" rx="3" fill="#FFFFFF" fill-opacity="0.08"/>
 
   <!-- Day grid: one dot per day in the app's states -->
-  <circle cx="322" cy="420" r="58" fill="#19B89B"/>
-  <circle cx="512" cy="420" r="58" fill="#F0B429"/>
-  <circle cx="702" cy="420" r="58" fill="#5B8CF6"/>
+  <circle cx="322" cy="420" r="58" fill="#22B8AE"/>
+  <circle cx="512" cy="420" r="58" fill="#E7A43C"/>
+  <circle cx="702" cy="420" r="58" fill="#71A0E8"/>
 
-  <circle cx="322" cy="600" r="58" fill="#F0775C"/>
+  <circle cx="322" cy="600" r="58" fill="#E8745D"/>
   <!-- Today: outlined cell with a count in progress -->
-  <rect x="424" y="512" width="176" height="176" rx="44" fill="none" stroke="#E6EAF0" stroke-width="14"/>
-  <circle cx="512" cy="600" r="44" fill="none" stroke="#C064C4" stroke-opacity="0.25" stroke-width="26"/>
-  <circle cx="512" cy="600" r="44" fill="none" stroke="#C064C4" stroke-width="26" stroke-linecap="round"
+  <rect x="424" y="512" width="176" height="176" rx="44" fill="none" stroke="#EBF5F0" stroke-width="14"/>
+  <circle cx="512" cy="600" r="44" fill="none" stroke="#D673B2" stroke-opacity="0.25" stroke-width="26"/>
+  <circle cx="512" cy="600" r="44" fill="none" stroke="#D673B2" stroke-width="26" stroke-linecap="round"
           stroke-dasharray="179 277" transform="rotate(-90 512 600)"/>
-  <circle cx="702" cy="600" r="50" fill="none" stroke="#7FAE45" stroke-opacity="0.55" stroke-width="14"/>
+  <circle cx="702" cy="600" r="50" fill="none" stroke="#93BD55" stroke-opacity="0.55" stroke-width="14"/>
 
-  <circle cx="322" cy="780" r="58" fill="#7FAE45"/>
-  <circle cx="512" cy="780" r="58" fill="#19B89B"/>
-  <circle cx="702" cy="780" r="50" fill="none" stroke="#F0B429" stroke-opacity="0.55" stroke-width="14"/>
+  <circle cx="322" cy="780" r="58" fill="#93BD55"/>
+  <circle cx="512" cy="780" r="58" fill="#22B8AE"/>
+  <circle cx="702" cy="780" r="50" fill="none" stroke="#E7A43C" stroke-opacity="0.55" stroke-width="14"/>
 </svg>
