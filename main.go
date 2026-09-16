@@ -75,7 +75,7 @@ func databasePath() (string, error) {
 // doesn't flash a different colour before the page loads.
 func backgroundFor(s *store.Store) *options.RGBA {
 	if theme, _ := s.Setting(context.Background(), "theme"); theme == "dark" {
-		return &options.RGBA{R: 0x11, G: 0x2F, B: 0x25, A: 255}
+		return &options.RGBA{R: 0x14, G: 0x3B, B: 0x2E, A: 255}
 	}
 	return &options.RGBA{R: 0x1A, G: 0x40, B: 0x33, A: 255}
 }
