@@ -11,12 +11,12 @@
   --ink:#12261F; --ink-2:#455750; --ink-3:#5F6E67; --ink-4:#AFBAB6;
   --accent:#165440; --on-accent:#F2FBF7;
   --on-ink:#F8FCFA; --on-habit:#FFFFFF; --danger:#C0392B;
-  --shadow:0 1px 2px rgba(18,38,31,.08), 0 18px 40px -12px rgba(18,38,31,.24);
+  --shadow:0 1px 2px rgba(18,38,31,.08), 0 18px 40px -12px rgba(18,38,31,.24); --edge:rgba(18,38,31,.2);
   --h-teal:#00958F; --h-amber:#BF801E; --h-blue:#4C80CD; --h-coral:#CA5843; --h-magenta:#BC5694; --h-moss:#668F33;
   --f-display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
   --f-ui:"Instrument Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
   --f-mono:"JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --r-sheet:18px; --r-tile:12px; --r-ctl:10px; --r-pill:999px;
+  --r-window:12px; --r-sheet:18px; --r-tile:12px; --r-ctl:10px; --r-pill:999px;
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){
@@ -27,7 +27,7 @@
     --ink:#E5EDEA; --ink-2:#B5C1BC; --ink-3:#919F99; --ink-4:#4F5B56;
     --accent:#92DDC0; --on-accent:#0B1F18;
     --on-ink:#121916; --on-habit:#0B1F18; --danger:#F2826B;
-    --shadow:0 1px 2px rgba(0,0,0,.3), 0 20px 44px -12px rgba(0,0,0,.6);
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 20px 44px -12px rgba(0,0,0,.6); --edge:rgba(231,241,237,.1);
     --h-teal:#37C2BB; --h-amber:#EEAC53; --h-blue:#76ACFC; --h-coral:#FB836D; --h-magenta:#EC81C0; --h-moss:#8FBB5F;
     color-scheme:dark;
   }
@@ -39,7 +39,7 @@
   --ink:#E5EDEA; --ink-2:#B5C1BC; --ink-3:#919F99; --ink-4:#4F5B56;
   --accent:#92DDC0; --on-accent:#0B1F18;
   --on-ink:#121916; --on-habit:#0B1F18; --danger:#F2826B;
-  --shadow:0 1px 2px rgba(0,0,0,.3), 0 20px 44px -12px rgba(0,0,0,.6);
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 20px 44px -12px rgba(0,0,0,.6); --edge:rgba(231,241,237,.1);
   --h-teal:#37C2BB; --h-amber:#EEAC53; --h-blue:#76ACFC; --h-coral:#FB836D; --h-magenta:#EC81C0; --h-moss:#8FBB5F;
   color-scheme:dark;
 }
@@ -70,6 +70,21 @@ input,textarea{user-select:text;-webkit-user-select:text}
 .bar .icon-btn:hover:not(:disabled){background:color-mix(in srgb, var(--on-band) 12%, transparent);color:var(--on-band)}
 .bar .icon-btn[aria-expanded="true"]{background:color-mix(in srgb, var(--on-band) 20%, transparent);color:var(--on-band)}
 .bar :focus-visible{outline-color:var(--on-band)}
+
+/* Custom frame (Linux): the page is the window, so it rounds its own corners and the header moves it. */
+:root[data-frame="custom"] body{background:transparent}
+:root[data-frame="custom"] .app{border-radius:var(--r-window);overflow:hidden}
+:root[data-frame="custom"] .app::after{content:"";position:absolute;inset:0;z-index:30;border-radius:inherit;box-shadow:inset 0 0 0 1px var(--edge);pointer-events:none}
+:root[data-frame="custom"] .bar{--wails-draggable:drag;position:relative;z-index:11}
+.bar button{--wails-draggable:no-drag}
+/* The window buttons take header room, so narrow windows get tighter buttons and, at the very narrowest, drop the year. */
+@media (max-width: 420px){
+  :root[data-frame="custom"] .bar .icon-btn{width:24px}
+  :root[data-frame="custom"] .bar .sep{margin-inline:2px}
+}
+@media (max-width: 370px){
+  :root[data-frame="custom"] .month-title span{display:none}
+}
 
 .stage{position:relative;flex:1;min-height:0;background:var(--surface);border-radius:var(--r-sheet) var(--r-sheet) 0 0;overflow:hidden}
 .cal-area{height:100%;display:flex;flex-direction:column;padding:8px 8px 8px}

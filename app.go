@@ -22,6 +22,10 @@ func (a *App) startup(ctx context.Context) { a.ctx = ctx }
 
 func (a *App) shutdown(context.Context) { a.store.Close() }
 
+// CustomFrame reports whether the window has no system title bar, so the page
+// must draw its own rounded frame and window buttons.
+func (a *App) CustomFrame() bool { return customFrame }
+
 func (a *App) ListHabits() ([]store.Habit, error) {
 	return a.store.ListHabits(a.ctx)
 }
