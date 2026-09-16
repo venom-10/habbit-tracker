@@ -1,9 +1,19 @@
 Download the file for your computer below. Your habits are stored only on your own machine.
 
 **macOS** — `habit-calendar-macos-universal.zip` (Apple Silicon and Intel)
-1. Unzip and move **Habit Calendar** to Applications.
-2. The app isn't signed with an Apple Developer ID, so macOS blocks the first launch. Open it once, then go to **System Settings → Privacy & Security** and click **Open Anyway**. Or run:
-   `xattr -dr com.apple.quarantine "/Applications/Habit Calendar.app"`
+
+Install or update from Terminal:
+```sh
+cd ~/Downloads
+curl -LO https://github.com/venom-10/habbit-tracker/releases/latest/download/habit-calendar-macos-universal.zip
+ditto -x -k habit-calendar-macos-universal.zip .
+rm -rf "/Applications/Habit Calendar.app"    # removes an older version; your habits are kept
+mv "Habit Calendar.app" /Applications/
+xattr -dr com.apple.quarantine "/Applications/Habit Calendar.app"
+open "/Applications/Habit Calendar.app"
+```
+
+Or by hand: unzip, drag **Habit Calendar** into Applications and open it. The app isn't signed with an Apple Developer ID, so macOS blocks the first launch — go to **System Settings → Privacy & Security** and click **Open Anyway**.
 
 **Windows** — `habit-calendar-windows-amd64.zip`
 1. Unzip and run `habit-calendar.exe`.
