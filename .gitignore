@@ -15,3 +15,6 @@ build/windows/
 .idea/
 .vscode/
 .DS_Store
+
+# Local packaging scratch
+pkg/

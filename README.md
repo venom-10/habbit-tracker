@@ -37,6 +37,16 @@ wails build -platform windows/amd64          # Windows, also works from Linux or
 wails build -platform darwin/universal       # macOS, must be built on a Mac
 ```
 
+## Install on Linux from a build
+
+`wails build` produces `build/bin/habit-calendar`, which runs from anywhere. To get a launcher entry and icon as well:
+
+```sh
+packaging/linux/install.sh    # run from a folder holding the binary and appicon.png/svg
+```
+
+Release archives ship that script next to the binary, so `./habit-calendar/install.sh` does the whole install. `uninstall.sh` removes it again and leaves your habits alone.
+
 ## Releasing
 
 Pushing a version tag builds Linux, Windows and macOS versions on GitHub Actions and publishes them as a GitHub Release:
@@ -46,7 +56,7 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
-The workflow is `.github/workflows/release.yml`; the text shown on the release page is `.github/release-notes.md`. To try the builds without publishing, run the workflow by hand from the Actions tab — the downloads appear under that run's artifacts.
+Each platform is built on its own runner: a Linux tarball with the install script, a Windows NSIS installer plus a portable zip, and a universal macOS app. The workflow is `.github/workflows/release.yml`; the text shown on the release page is `.github/release-notes.md`. To try the builds without publishing, run the workflow by hand from the Actions tab — the downloads appear under that run's artifacts.
 
 ## Tests
 
