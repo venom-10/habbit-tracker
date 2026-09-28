@@ -49,9 +49,19 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
 
+      # Retried: the Go module proxy occasionally drops a download mid-stream.
       - name: Install Wails CLI
         shell: bash
-        run: go install github.com/wailsapp/wails/v2/cmd/wails@$(go list -m -f '{{.Version}}' github.com/wailsapp/wails/v2)
+        run: |
+          go version
+          version=$(go list -m -f '{{.Version}}' github.com/wailsapp/wails/v2)
+          echo "installing wails $version"
+          for attempt in 1 2 3; do
+            go install "github.com/wailsapp/wails/v2/cmd/wails@$version" && break
+            echo "attempt $attempt failed; retrying in 15s"
+            sleep 15
+          done
+          wails version
 
       - name: Install NSIS for the Windows installer
         if: runner.os == 'Windows'
